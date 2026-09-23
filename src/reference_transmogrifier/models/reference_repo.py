@@ -39,6 +39,7 @@ class NodeTypeEnum(str, Enum):
     gpu_rtx_6000 = "gpu_rtx_6000"
     gpu_v100 = "gpu_v100"
     gpu_v100_nvlink = "gpu_v100_nvlink"
+    gpu_pontevecchio = "gpu_pontevecchio"
     storage = "storage"
     storage_hierarchy = "storage_hierarchy"
     storage_nvme = "storage_nvme"
@@ -47,6 +48,18 @@ class NodeTypeEnum(str, Enum):
 class InstructionSetEnum(str, Enum):
     x86_64 = "x86_64"
     aarch64 = "aarch64"
+
+
+class NodeModeEnum(str, Enum):
+    bare_metal_only = "bare_metal_only"
+    vm_only = "vm_only"
+    configurable = "configurable"
+
+
+class GpuAllocationEnum(str, Enum):
+    pcie_passthrough = "pcie_passthrough"
+    mig_slice = "mig_slice"
+    full_node = "full_node"
 
 
 class ManufacturerEnum(str, Enum):
@@ -73,6 +86,7 @@ class ManufacturerEnum(str, Enum):
     skhynix = "SK Hynix"
     xilinx = "Xilinx"
     sandisk = "Sandisk"
+    kioxia = "kioxia"
 
 
 def normalize_manufacturer(name: str) -> ManufacturerEnum:
@@ -88,6 +102,7 @@ def normalize_manufacturer(name: str) -> ManufacturerEnum:
     full_name_mapping = {
         "advanced micro devices, inc. [amd/ati]": ManufacturerEnum.amd,
         "sk hynix": ManufacturerEnum.skhynix,
+        "kioxia corporation": ManufacturerEnum.kioxia,
         "american megatrends international, llc.": ManufacturerEnum.ami,
         "advanced micro devices, inc.": ManufacturerEnum.amd,
     }
@@ -416,6 +431,26 @@ class GPU(BaseModel):
     gpu_vendor: Optional[NormalizedManufacturer] = None
 
 
+class VmFlavorGpu(BaseModel):
+    gpu: bool = False
+    gpu_count: Optional[int] = None
+    gpu_allocation: Optional[GpuAllocationEnum] = None
+    gpu_mig_profile: Optional[str] = None
+
+
+class VmFlavor(BaseModel):
+    type: str = "vm_flavor"
+    uid: str
+    vcpus: Optional[int] = None
+    ram_size: Optional[int] = None
+    humanized_ram_size: Optional[str] = None
+    disk_size: Optional[int] = None
+    humanized_disk_size: Optional[str] = None
+    gpu: VmFlavorGpu = Field(default_factory=lambda: VmFlavorGpu(gpu=False))
+    openstack_properties: Optional[dict] = None
+    su_cost_per_hour: Optional[float] = None
+
+
 PCI_Tuple = namedtuple("PCI_Tuple", ["vendor_id", "product_id", "pci_class"])
 
 FPGA_lookup = {
@@ -436,6 +471,7 @@ class Node(BaseModel):
     network_adapters: list[NetworkAdapter]
     node_name: str
     admin_note: Optional[str] = None
+    node_mode: Optional[NodeModeEnum] = None
     node_type: NodeTypeEnum
     placement: Optional[Placement] = None
     processor: Processor
