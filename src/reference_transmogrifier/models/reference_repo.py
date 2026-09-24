@@ -29,6 +29,7 @@ class NodeTypeEnum(str, Enum):
     fpga = "fpga"
     gpu_a100_nvlink = "gpu_a100_nvlink"
     gpu_a100_pcie = "gpu_a100_pcie"
+    gpu_gh200_96gb = "gpu_gh200_96gb"
     gpu_h100 = "gpu_h100"
     gpu_k80 = "gpu_k80"
     gpu_mi100 = "gpu_mi100"
@@ -83,6 +84,7 @@ class ManufacturerEnum(str, Enum):
     seagate = "Seagate"
     toshiba = "Toshiba"
     qlogic = "QLogic"
+    quanta = "QCT"
     skhynix = "SK Hynix"
     xilinx = "Xilinx"
     sandisk = "Sandisk"
@@ -105,6 +107,7 @@ def normalize_manufacturer(name: str) -> ManufacturerEnum:
         "kioxia corporation": ManufacturerEnum.kioxia,
         "american megatrends international, llc.": ManufacturerEnum.ami,
         "advanced micro devices, inc.": ManufacturerEnum.amd,
+        "quanta cloud technology inc.": ManufacturerEnum.quanta, 
     }
     if name in full_name_mapping:
         return full_name_mapping[name]
@@ -128,6 +131,7 @@ def normalize_manufacturer(name: str) -> ManufacturerEnum:
         "seagate": ManufacturerEnum.seagate,
         "toshiba": ManufacturerEnum.toshiba,
         "qlogic": ManufacturerEnum.qlogic,
+        "quanta": ManufacturerEnum.quanta,
         "sk": ManufacturerEnum.skhynix,
         "hynix": ManufacturerEnum.skhynix,
         "skhynix": ManufacturerEnum.skhynix,
@@ -218,7 +222,7 @@ class ChassisModelEnum(str, Enum):
     dell_xe9640 = "PowerEdge XE9640"
     gigabyte_r181_t92 = "R181-T92-00"
     supermicro_3015mr_h10tnr = "AS-3015MR-H10TNR"
-
+    quantagrid_s74g_2u = "QuantaGrid S74G-2U 1S7G2000026"
 
 class Chassis(BaseModel):
     manufacturer: Optional[NormalizedManufacturer] = None
@@ -262,6 +266,7 @@ class Chassis(BaseModel):
             "PowerEdge XE9640": ChassisModelEnum.dell_xe9640,
             "R181-T92-00": ChassisModelEnum.gigabyte_r181_t92,
             "AS -3015MR-H10TNR": ChassisModelEnum.supermicro_3015mr_h10tnr, 
+            "QuantaGrid S74G-2U 1S7G2000026": ChassisModelEnum.quantagrid_s74g_2u,
             }
 
         model = v.split("(")[0].strip()
@@ -373,7 +378,7 @@ class StorageDevice(BaseModel):
     rev: Optional[str] = None
     size: int
     vendor: Optional[NormalizedManufacturer] = None
-    wwn: str
+    wwn: Optional[str] = None
 
     @computed_field
     @property

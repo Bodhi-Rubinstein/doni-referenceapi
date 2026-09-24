@@ -105,7 +105,7 @@ class PhysicalCPU(BaseModel):
     threads: int
     family: Optional[int] = None
     model: int
-    stepping: int
+    stepping: str
     architecture: str
     l1d_cache: Optional[ByteSize] = Field(alias="l1d cache", exclude=True)
     l1i_cache: Optional[ByteSize] = Field(alias="l1i cache", exclude=True)
